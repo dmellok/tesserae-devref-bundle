@@ -1,0 +1,96 @@
+{
+  "tesserae_compat": "1.x",
+  "name": "Dev Reference, Card",
+  "version": "0.1.0",
+  "kind": "widget",
+  "description": "Worked example of every plugin contract surface: cell_options of every type (string, textarea, number, select, multiselect, boolean, color, choices_from), a server-side fetch() that resolves shared state, and a client.js render that scales across xs/sm/md/lg. Reads the picked board from devref_core. Install both folders together as a bundle.",
+  "icon": "ph-blueprint",
+  "supports": {
+    "sizes": ["xs", "sm", "md", "lg"]
+  },
+  "cell_options": [
+    {
+      "name": "board_id",
+      "type": "select",
+      "label": "Board",
+      "default": "",
+      "choices_from": "boards",
+      "help": "Pick a board from the devref_core admin page. choices_from delegates to devref_core's server.py choices() function so the dropdown stays in sync with whatever boards the user has saved."
+    },
+    {
+      "name": "title_override",
+      "type": "string",
+      "label": "Title override",
+      "default": "",
+      "help": "If set, overrides the board's name. Demonstrates the `string` option type and 'optional override' UX pattern."
+    },
+    {
+      "name": "subtitle",
+      "type": "textarea",
+      "label": "Subtitle",
+      "default": "",
+      "help": "Multi-line free text rendered under the title. Demonstrates the `textarea` option type (vs `string` which is one-line)."
+    },
+    {
+      "name": "stat_value",
+      "type": "number",
+      "label": "Stat value",
+      "default": 42,
+      "min": 0,
+      "max": 9999,
+      "help": "A number rendered prominently as a 'stat'. Demonstrates the `number` option type + min/max constraints."
+    },
+    {
+      "name": "stat_label",
+      "type": "string",
+      "label": "Stat label",
+      "default": "items",
+      "help": "Caption under the stat value."
+    },
+    {
+      "name": "variant",
+      "type": "select",
+      "label": "Layout variant",
+      "default": "balanced",
+      "choices": [
+        { "value": "balanced", "label": "Balanced, title + body + stat" },
+        { "value": "stat_hero", "label": "Stat hero, big number on top" },
+        { "value": "body_first", "label": "Body first, then meta" }
+      ],
+      "help": "Demonstrates the static `select` option type (vs choices_from which is dynamic)."
+    },
+    {
+      "name": "show_sections",
+      "type": "multiselect",
+      "label": "Show sections",
+      "default": ["title", "body", "stat", "footer"],
+      "choices": [
+        { "value": "title",  "label": "Title" },
+        { "value": "body",   "label": "Body" },
+        { "value": "stat",   "label": "Stat" },
+        { "value": "footer", "label": "Footer" }
+      ],
+      "help": "Demonstrates the `multiselect` option type. The cell shows / hides each section based on which values are ticked."
+    },
+    {
+      "name": "use_accent_bg",
+      "type": "boolean",
+      "label": "Tinted background",
+      "default": true,
+      "help": "Demonstrates the `boolean` option type. When on, the card paints a subtle wash of the board's accent colour across the surface."
+    },
+    {
+      "name": "accent_override",
+      "type": "color",
+      "label": "Accent override",
+      "default": "",
+      "help": "Demonstrates the `color` option type. Empty falls back to the board's saved accent; setting a value here overrides per-cell."
+    }
+  ],
+  "settings": [],
+  "render": {
+    "dither": "none",
+    "needs_network": false,
+    "full_bleed": false
+  }
+}

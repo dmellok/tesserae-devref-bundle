@@ -1,0 +1,95 @@
+{% extends "_base.html" %}
+{% from "_components.html" import card_head %}
+{% block title %}Dev Reference boards, Tesserae{% endblock %}
+
+{% block main %}
+<header class="page-head">
+  <div>
+    <h1><i class="ph ph-blueprint"></i> Dev Reference boards</h1>
+    <p class="lede">
+      Saved <em>boards</em> the <code>devref_card</code> widget picks
+      from. Each board carries a display name, an accent colour, and
+      a short body of text; the widget renders the picked board on
+      every dashboard cell that targets it. This page is a worked
+      example of the shared-state / instance-registry pattern that
+      <code>glances_core</code>, <code>picture_gallery</code>, etc.
+      use too, copy it as a starting point for your own widget family.
+    </p>
+  </div>
+</header>
+
+<section class="card">
+  {{ card_head('Add a board', icon_name='plus-circle',
+               blurb='Boards are stored under data/plugins/devref_core/boards.json. The atomic write (tmp + rename) is in server.py:_save().') }}
+  <form method="post" action="{{ url_for('devref_core_admin.create') }}" class="form">
+    <div class="field">
+      <label for="dr-new-name">Name</label>
+      <input type="text" id="dr-new-name" name="name"
+             placeholder="Morning routine" required>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="dr-new-accent">Accent colour</label>
+        <input type="color" id="dr-new-accent" name="accent" value="#0ea5e9">
+      </div>
+    </div>
+    <div class="field">
+      <label for="dr-new-body">Body</label>
+      <textarea id="dr-new-body" name="body" rows="3"
+                placeholder="Coffee, stretch, write three sentences."></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="button primary">
+        <i class="ph ph-plus" aria-hidden="true"></i><span>Add board</span>
+      </button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  {{ card_head('Saved boards', icon_name='list',
+               blurb='Each board has a stable ID (shown beside the row) that devref_card cells store. The choices() function in server.py exposes them to the widget cell picker via choices_from.') }}
+  {% if not boards %}
+  <p class="lede">No boards yet. Add one above; it'll then appear in the
+    <code>devref_card</code> cell's Board dropdown.</p>
+  {% else %}
+  <ul class="dr-list">
+    {% for b in boards %}
+    <li class="dr-row" style="--dr-accent: {{ b.accent }};">
+      <div class="dr-swatch" aria-hidden="true"></div>
+      <div class="dr-body">
+        <strong>{{ b.name }}</strong>
+        {% if b.body %}<p>{{ b.body }}</p>{% endif %}
+        <code class="muted">{{ b.id }}</code>
+      </div>
+      <form method="post"
+            action="{{ url_for('devref_core_admin.delete', board_id=b.id) }}"
+            onsubmit="return confirm('Delete {{ b.name }}?');">
+        <button type="submit" class="button ghost danger" title="Delete board">
+          <i class="ph ph-trash" aria-hidden="true"></i>
+        </button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+<style>
+  .dr-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+  .dr-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    background: var(--t-surface);
+  }
+  .dr-swatch { width: 28px; height: 28px; border-radius: 6px; background: var(--dr-accent, var(--t-accent)); border: 1px solid var(--t-border); }
+  .dr-body strong { display: block; }
+  .dr-body p { margin: 0.2rem 0 0.3rem; color: var(--t-fg-soft); font-size: 0.9rem; }
+  .dr-body code { font-size: 0.8rem; }
+</style>
+{% endblock %}
