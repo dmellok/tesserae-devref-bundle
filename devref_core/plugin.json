@@ -1,11 +1,18 @@
 {
   "tesserae_compat": "1.x",
   "name": "Dev Reference, Core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "kind": "data",
   "description": "Admin-only companion to devref_card. Stores a list of named 'boards' (id + label + colour + body text) that devref_card cells pick from via choices_from. Exists primarily as a developer reference: this is the shape every shared-state / instance-registry plugin (glances_core, picture_gallery, ...) uses.",
   "icon": "ph-blueprint",
-  "supports": { "sizes": ["xs", "sm", "md", "lg"] },
+  "supports": {
+    "sizes": [
+      "xs",
+      "sm",
+      "md",
+      "lg"
+    ]
+  },
   "settings": [
     {
       "name": "max_boards",
@@ -14,8 +21,11 @@
       "default": 20,
       "min": 1,
       "max": 100,
-      "help": "Soft cap on saved boards. Lives under Settings → Plugins → Dev Reference, Core; demonstrates the plugin-level ``settings`` surface (vs cell_options, which are per-cell)."
+      "help": "Soft cap on saved boards. Lives under Settings \u2192 Plugins \u2192 Dev Reference, Core; demonstrates the plugin-level ``settings`` surface (vs cell_options, which are per-cell)."
     }
   ],
-  "render": { "needs_network": false }
+  "render": {
+    "needs_network": false
+  },
+  "requires": []
 }
