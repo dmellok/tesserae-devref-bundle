@@ -157,13 +157,14 @@ on push, not on a ticking clock).
    treated as "no data", which the client has to special-case.
    Returning `{"error": "..."}` is the convention for soft failures
    so the cell renders an error card instead of crashing.
-5. **`choices_from` looks for `choices(name)` in the SAME plugin
-   first**, then falls back to plugin-id lookup. Our manifest sets
-   `choices_from: "boards"`; the host resolves this by calling
-   `devref_card.server_module.choices("boards")` — and because
-   `devref_card` doesn't define `choices()`, the host walks the
-   registry looking for one. To keep the lookup unambiguous, expose
-   `choices()` on the plugin that owns the data.
+5. **`choices_from` resolves on the SAME plugin only.** The host
+   calls `<this_plugin>.server_module.choices(name)` when populating
+   a cell-option dropdown; it does NOT walk the registry looking for
+   a sibling's `choices()`. So a widget that wants to pull options
+   from a `_core` sibling must expose its own `choices()` that
+   delegates. See `devref_card/server.py` for the one-line
+   delegation pattern: `devref_card.choices("boards")` calls
+   `devref_core.choices("boards")` through the registry.
 
 ## License
 

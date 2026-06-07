@@ -1,10 +1,17 @@
 """devref_card, the display half of the Dev Reference bundle.
 
-Server-side ``fetch()`` runs once per render: it resolves the cell's
-selected ``board_id`` into the full board record by reading from
-``devref_core``'s shared store, then returns a JSON-serialisable dict
-the client paints from. This is the same pattern every "widget reads
-shared state from a _core sibling" relationship uses.
+Two functions the host calls on this module:
+
+  * ``choices(name)`` is called by the editor at cell-config time to
+    populate any cell_option whose manifest sets ``choices_from``.
+    The host calls this on the SAME plugin (devref_card), not on the
+    sibling that owns the data, so we expose ``choices()`` here and
+    delegate to devref_core. Mirrors how glances_status forwards to
+    glances_core, or ha_* widgets to ha_core.
+  * ``fetch(options, settings, ctx)`` runs once per render: resolves
+    the cell's selected ``board_id`` into the full board record by
+    reading from devref_core's shared store, then returns a JSON-
+    serialisable dict the client paints from.
 
 The widget contract for server-side fetch:
 
@@ -37,6 +44,42 @@ from typing import Any
 from flask import current_app
 
 
+def _core_module() -> Any:
+    """Return ``devref_core``'s server module, or ``None`` if it isn't
+    loaded. Used by both ``choices()`` (editor-side dropdown) and
+    ``fetch()`` (render-side data resolve) to reach the shared store
+    symmetrically through the host's plugin registry."""
+    registry = current_app.config.get("PLUGIN_REGISTRY")
+    if registry is None:
+        return None
+    core = registry.get("devref_core")
+    if core is None:
+        return None
+    return core.server_module
+
+
+def choices(name: str) -> list[dict[str, str]]:
+    """Powers the cell_option whose manifest sets ``choices_from``.
+
+    Important contract detail: the host resolves ``choices_from`` by
+    calling ``choices(name)`` on the SAME plugin (``devref_card``),
+    NOT on a sibling. So even though ``devref_core`` is the one with
+    boards, this widget has to expose its own ``choices()`` and
+    delegate. Mirrors what every real "widget + core" pair does
+    (e.g. ``glances_status`` delegates to ``glances_core``)."""
+    core = _core_module()
+    if core is None:
+        return []
+    core_choices = getattr(core, "choices", None)
+    if not callable(core_choices):
+        return []
+    try:
+        result = core_choices(name)
+    except Exception:
+        return []
+    return list(result) if result else []
+
+
 def _resolve_board(board_id: str) -> dict[str, Any] | None:
     """Look up a board record by id from ``devref_core``'s store.
 
@@ -45,13 +88,10 @@ def _resolve_board(board_id: str) -> dict[str, Any] | None:
     state rather than crashing the cell."""
     if not board_id:
         return None
-    registry = current_app.config.get("PLUGIN_REGISTRY")
-    if registry is None:
+    core = _core_module()
+    if core is None:
         return None
-    core = registry.get("devref_core")
-    if core is None or core.server_module is None:
-        return None
-    list_boards = getattr(core.server_module, "list_boards", None)
+    list_boards = getattr(core, "list_boards", None)
     if list_boards is None:
         return None
     for board in list_boards():
