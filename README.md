@@ -38,6 +38,10 @@ devref-bundle-v0.1.0/        ← single wrapping folder (any name; the
     plugin.json               ← manifest (kind: "widget")
     server.py                 ← fetch()
     client.js                 ← render()
+  devref_egress/              ← network-egress contract demo
+    plugin.json               ← manifest with a `requires:` block
+    server.py                 ← fetch() that hits an allowed host
+    client.js                 ← render() showing what got allowed
 ```
 
 ## What's where
@@ -133,6 +137,55 @@ cell's saved configuration), resolves them into a render envelope,
 and writes inline HTML + CSS into the shadow root. Pure inline DOM:
 no network at render time, no setInterval (e-ink dashboards refresh
 on push, not on a ticking clock).
+
+### `devref_egress/`
+
+Minimal worked example of the **network egress contract** introduced
+in Tesserae's plugin spec for community widgets.
+
+**`plugin.json`** — declares one capability:
+
+```jsonc
+"requires": ["network:api.github.com"]
+```
+
+Every entry is `<category>:<value>`. The supported categories today:
+
+- `network:<hostname>` — egress allowlist. The host monkey-patches
+  `socket.create_connection` so a connect attempt to any host outside
+  this list raises `CapabilityDenied`. `network:*` is accepted but
+  flagged in catalog review (it means "unrestricted", which the
+  reviewer should sign off on by name).
+- `settings:plugin` — read the plugin's own settings section
+  (the common case). `settings:plugin/<other_id>` for a sibling's
+  section; `settings:app` for top-level app settings (lat/lon, etc.).
+  Review-only in v1: the manifest forces the reviewer to notice an
+  unusual scope claim, but no runtime block is enforced yet.
+- `filesystem:write:<path>` — write outside `data_dir`. Reads are
+  implicit for `data_dir` and the plugin folder. Also review-only in
+  v1 — Python's `open()` is reached via too many paths to interpose
+  cleanly, so the manifest is the audit record.
+
+**Widgets without a `requires:` block** load with the pre-#2
+behaviour (no enforcement) so the marketplace upgrade doesn't break
+existing installs. Catalog review for new submissions does ask for
+one — even an empty `"requires": []` is preferable to nothing
+because it tells the reviewer "I thought about this and decided I
+don't need anything".
+
+**`server.py`** — fetches `https://api.github.com/zen` (no auth, no
+API key, just a one-line quote string) when the cell's `demo_url`
+option is set to `allowed`, or `https://httpbin.org/uuid` when set to
+`denied`. The author writes the fetch the way they always would —
+`urllib.request.urlopen(url)`. The host runs the call inside a
+capability scope it set up before invoking `fetch()`, and the socket
+hook does the rest.
+
+**`client.js`** — paints a green ALLOWED pill when the request
+returned data, a red BLOCKED pill when the host raised
+`CapabilityDenied` (or any other error). Renders the offending
+URL plus the manifest's `requires:` line so the cell itself
+documents the contract for a reviewer reading the screen.
 
 ## Contract gotchas
 

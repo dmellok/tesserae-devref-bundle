@@ -1,0 +1,24 @@
+{
+  "tesserae_compat": "1.x",
+  "name": "Dev Reference, Egress",
+  "version": "0.1.0",
+  "kind": "widget",
+  "description": "Minimal worked example of the network-egress contract. Declares one allowed host in the manifest (network:api.github.com) and fetches GitHub's /zen endpoint (no auth, no API key, just a single-line quote). Demonstrates: how the requires block is written, how the host enforces it at runtime, and what happens on the unhappy path when a widget reaches for an undeclared host (set the demo option to flip the request URL and watch the cell surface a CapabilityDenied error instead of a network round-trip).",
+  "icon": "ph-shield-check",
+  "supports": { "sizes": ["xs", "sm", "md", "lg"] },
+  "cell_options": [
+    {
+      "name": "demo_url",
+      "type": "select",
+      "label": "Demo URL",
+      "default": "allowed",
+      "choices": [
+        { "value": "allowed",  "label": "Allowed host (api.github.com) - works" },
+        { "value": "denied",   "label": "Undeclared host (httpbin.org)  - blocked by the gate" }
+      ],
+      "help": "Pick which URL the widget hits. The manifest only declares network:api.github.com, so the second option exercises the unhappy path: the socket hook raises CapabilityDenied, the widget surfaces it as a cell-level error, and the rest of the page keeps rendering."
+    }
+  ],
+  "render": { "dither": "none", "needs_network": true },
+  "requires": ["network:api.github.com"]
+}

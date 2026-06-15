@@ -1,7 +1,7 @@
 {
   "tesserae_compat": "1.x",
   "name": "Dev Reference, Core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "kind": "data",
   "description": "Admin-only companion to devref_card. Stores a list of named 'boards' (id + label + colour + body text) that devref_card cells pick from via choices_from. Exists primarily as a developer reference: this is the shape every shared-state / instance-registry plugin (glances_core, picture_gallery, ...) uses.",
   "icon": "ph-blueprint",
