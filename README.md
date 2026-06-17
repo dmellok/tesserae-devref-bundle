@@ -221,4 +221,4 @@ documents the contract for a reviewer reading the screen.
 
 ## License
 
-MIT.
+AGPL-3.0-or-later.
